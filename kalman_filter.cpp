@@ -31,7 +31,7 @@ void KalmanFilter::Predict(){
  * pdate the state by using Kalman Filter equations
  * @param z the time in sec between steps k & k+1
  */
-void KalmanFilter::Update(const VectorXd &z){
+void KalmanFilter::Correct(const VectorXd &z){
 
     VectorXd z_pred = H_ * x_;
 
@@ -63,7 +63,7 @@ VectorXd KalmanFilter::CartesianToPolar(const VectorXd &x_state){
     // if rho is very small, set it to 0.0001 to avoid division by 0 in computing rho_dot
     if(rho < 0.000001){
         rho = 0.000001;
-        cout << "The transformation from cartesian to polar is ill-conditioned"
+        cout << "The transformation from cartesian to polar is ill-conditioned" << endl;
     }
 
     rho_dot = (px * vx + py * vy) / rho;
@@ -72,4 +72,9 @@ VectorXd KalmanFilter::CartesianToPolar(const VectorXd &x_state){
     z_pred << rho, phi, rho_dot;
 
     return z_pred;
+}
+
+// Implementation of EKF
+void KalmanFilter::CorrectEKF(const VectorXd &z) {
+
 }

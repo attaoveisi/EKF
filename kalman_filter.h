@@ -18,6 +18,7 @@
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using std::cout;
+using std::endl;
 
 class KalmanFilter{
 public:
@@ -50,7 +51,7 @@ public:
     /**
     * Measurement covariance matrix
     */
-    MatrixXd R_
+    MatrixXd R_;
 
     /**
     * Default constructor
