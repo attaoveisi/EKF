@@ -94,18 +94,22 @@ int main(int argc, char* argv[]){
     /**
      * Initialize the measurement and ground-truth vectors
      */
-    vector<Measurement> measurement_list;
-    vector<GroundTruth> ground_truth_list;
+    vector<Measurement> measurement_vector;
+    vector<GroundTruth> ground_truth_vector;
 
     /**
      * define line-by-line reading of the data
      */
     string current_line;
+    uint64_t n_line{0};
 
     /**
      * run the loop till all the measurements are used
      */
     while(getline(in_file_, current_line)){
+
+        //Iterate over the n_line
+        n_line += 1;
 
         // For each line, i.e., measurements, define sensor_type,
         // measurement and ground_truth
@@ -120,9 +124,9 @@ int main(int argc, char* argv[]){
         iss >> sensor_type;
 
         if (sensor_type.compare("L") == 0){
-            // This is a Laser measurement
+            // This is a Lidar measurement
             /**
-             * read the measurement from Laser at current time-stamp
+             * Read the measurement from Laser at current time-stamp
              */
              meas.sensor_type_ = Measurement::SensorType::LIDAR;
              meas.raw_measurements_ = VectorXd(2);
@@ -135,15 +139,60 @@ int main(int argc, char* argv[]){
              meas.raw_measurements_[1] = y;
 
              //extract the time stamp
+             iss >> timestamp;
+             meas.timestamp_ = timestamp;
 
+             // save in the measurement vector
+             measurement_vector.push_back(meas);
+        }else if(sensor_type.compare("R") == 0){
+            // This is a Radar data
+            /**
+             * Read the measurement from Radar
+             */
+            meas.sensor_type_ = Measurement::SensorType::RADAR;
+            meas.raw_measurements_ = VectorXd(3);
+            float ro, phi, ro_dot;
+
+            // extract the Radar distance, and velocity info
+            iss >> ro; // Distance to object: RANGE
+            iss >> phi; // Angle to the object: BEARING
+            iss >> ro_dot; // RADIAL Velocity
+            meas.raw_measurements_[0] = ro;
+            meas.raw_measurements_[1] = phi;
+            meas.raw_measurements_[2] = ro_dot;
+
+            //extract the time stamp
+            iss >> timestamp;
+            meas.timestamp_ = timestamp;
+            measurement_vector.push_back(meas);
+
+        }else if(sensor_type.compare("I") == 0){
+            // This is a IMU data
+            /**
+             * Read the measurement from IMU
+             */
+        }else if(sensor_type.compare("G") == 0){
+            // This is a GPS data
+            /**
+             * Read the measurement from GPS
+             */
+        }else{
+            cerr << "There is a line with line number :(" << n_line << ")measurement data without known sensor type (L, R, I, G)";
         }
 
-        cout << 'The sensor type is: '
-
-
+        /**
+         * Read the ground truth for comparison
+         */
+         float x_gt, y_gt, vx_gt, vy_gt;
+         iss >> x_gt;
+         iss >> y_gt;
+         iss >> vx_gt;
+         iss >> vy_gt;
+         gt.gt_values_ = VectorXd(4);
+         gt.gt_values_[0] = x_gt;
+         gt.gt_values_[1] = y_gt;
+         gt.gt_values_[2] = vx_gt;
+         gt.gt_values_[3] = vy_gt;
+         ground_truth_vector.push_back(gt);
     }
-
-
-
-
 }
