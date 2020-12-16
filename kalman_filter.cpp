@@ -76,5 +76,33 @@ VectorXd KalmanFilter::CartesianToPolar(const VectorXd &x_state){
 
 // Implementation of EKF
 void KalmanFilter::CorrectEKF(const VectorXd &z) {
+    // convert radar measurements from cartesian coordinates (x, y, vx, vy) to polar (rho, phi, rho_dot).
+    VectorXd z_pred = CartesianToPolar(x_);
+
+    /**
+     * Not sure about this part
+     */
+    VectorXd y = z - z_pred;
+
+    //Adjust the value of theta if it is outside of [-PI, PI]
+    while(y(1) > M_PI){
+        y(1) -= 2 * M_PI;
+    }
+    while(y(1) < -M_PI){
+        y(1) += 2 * M_PI;
+    }
+
+    // following is exact the same as in the function of KalmanFilter::Update()
+    MatrixXd Ht = H_.transpose();
+    MatrixXd PHt = P_ * Ht;
+    MatrixXd S = H_ * PHt + R_;
+    MatrixXd Si = S.inverse();
+    MatrixXd K = PHt * Si;
+
+    //new estimate
+    x_ = x_ + (K * y);
+    long x_size = x_.size();
+    MatrixXd I = MatrixXd::Identity(x_size, x_size);
+    P_ = (I - K * H_) * P_;
 
 }

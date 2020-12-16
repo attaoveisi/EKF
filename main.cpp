@@ -7,7 +7,7 @@
 #include <vector>
 #include <stdlib.h>
 #include "Eigen/Dense"
-
+#include "FusionEKF.h"
 #include "ground_truth.h"
 #include "measurement.h"
 
@@ -195,4 +195,87 @@ int main(int argc, char* argv[]){
          gt.gt_values_[3] = vy_gt;
          ground_truth_vector.push_back(gt);
     }
+
+    /**
+    * Craete a fusion object
+    */
+    FusionEKF fusionEKF;
+
+    /**
+    * For RMSE calculation
+    */
+    vector<VectorXd> estimations;
+    vector<VectorXd> ground_truth;
+
+    /**
+    * Apply EKF-based fusion:
+    * start filtering from the second frame as
+    * the speed is unknown in the first
+    */
+    for(auto k = 0; k < measurement_vector.size(); ++k){
+        fusionEKF.ProcessMeasurement(measurement_vector[k]);
+
+        /**
+        * output the estimation
+        */
+        out_file_ << fusionEKF.ekf_.x_(0) << "\t";
+        out_file_ << fusionEKF.ekf_.x_(1) << "\t";
+        out_file_ << fusionEKF.ekf_.x_(2) << "\t";
+        out_file_ << fusionEKF.ekf_.x_(3) << "\t";
+
+        /**
+         * output the measurements
+         */
+        if(measurement_vector[k].sensor_type_ == Measurement::SensorType::LIDAR) {
+            // output the estimation
+            out_file_ << measurement_vector[k].raw_measurements_(0) << "\t";
+            out_file_ << measurement_vector[k].raw_measurements_(1) << "\t";
+        }else if(measurement_vector[k].sensor_type_ == Measurement::SensorType::RADAR) {
+            // output the estimation in the cartesian coordinates
+            float ro = measurement_vector[k].raw_measurements_(0);
+            float phi = measurement_vector[k].raw_measurements_(1);
+            out_file_ << ro * cos(phi) << "\t"; // p1_meas
+            out_file_ << ro * sin(phi) << "\t"; // ps_meas
+        }else if(measurement_vector[k].sensor_type_ == Measurement::SensorType::IMU) {
+            /**
+             * TODO: Implement IMU output
+             */
+        }else if(measurement_vector[k].sensor_type_ == Measurement::SensorType::GPS) {
+            /**
+             * TODO: Implement GPS output
+             */
+        } else{
+            cerr << "Unknown sensor type for saving in output files!" << endl;
+        }
+
+        /**
+         * output the ground truth vector
+         */
+        out_file_ << ground_truth_vector[k].gt_values_(0) << "\t";
+        out_file_ << ground_truth_vector[k].gt_values_(1) << "\t";
+        out_file_ << ground_truth_vector[k].gt_values_(2) << "\t";
+        out_file_ << ground_truth_vector[k].gt_values_(3) << "\n";
+
+        estimations.push_back(fusionEKF.ekf_.x_);
+        ground_truth.push_back(ground_truth_vector[k].gt_values_);
+    }
+
+    /**
+     * Calculate the RMSE of the estimation
+     */
+
+    Helper helper;
+    cout << "RMSE is calculated as:" << endl << helper.CalculateRMSE(estimations, ground_truth) << endl;
+
+    /**
+     * Close the files
+     */
+    if (out_file_.is_open()) {
+        out_file_.close();
+    }
+    if (in_file_.is_open()) {
+        in_file_.close();
+    }
+
+    return 0;
 }
