@@ -4,10 +4,10 @@
 #include "helper.h"
 
 // Default constructor
-helper::Helper(){}
+Helper::Helper(){}
 
 // Default deconstructor
-helper::~Helper(){}
+Helper::~Helper(){}
 
 /**
 * RMSE method
@@ -29,7 +29,7 @@ VectorXd Helper::CalculateRMSE(const vector<VectorXd> &estimations,
     /**
      * Accumulate squared observation error
      */
-    for(auto i:estimations.size()){
+    for(auto i = 0; i<estimations.size(); ++i){
 
         VectorXd residual = estimations[i] - ground_truth[i];
 
