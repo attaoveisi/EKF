@@ -44,12 +44,16 @@ void check_arguments(int argc, char* argv[]){
     switch (argc) {
         case 1:
             cerr << usage_syntax << endl;
+            break;
         case 2:
             cerr << "Missing output file.\n" << usage_syntax << endl;
+            break;
         case 3:
             has_valid_args = true;
+            break;
         case 4 ... INT_MAX:
             cerr << "Too many arguments. \n" << usage_syntax << endl;
+            break;
         default:
             cout << "Ckecking the validity of syntax ..." << endl;
     }
@@ -328,10 +332,9 @@ int main(int argc, char* argv[]){
     matplot::title("Comparison of the estimated position with ground truth.");
     matplot::xlabel( "position x (m)");
     matplot::ylabel("position y (m)");
+    matplot::legend({"EKF","GT"});
     matplot::show();
     matplot::save("../filter_output/Tracking.jpg");
-
-
 
     /**
      * Open a figure2
@@ -348,6 +351,7 @@ int main(int argc, char* argv[]){
     matplot::title(ax1, "Comparison of the estimated lateral velocity with ground truth.");
     matplot::xlabel(ax1, "index");
     matplot::ylabel(ax1, "position v_{y} (m/s)");
+    matplot::legend({"EKF","GT"});
 
     auto ax2 = matplot::nexttile();
     matplot::plot(ax2, vx_estimated, "-k");
@@ -356,6 +360,7 @@ int main(int argc, char* argv[]){
     matplot::title(ax2, "Comparison of the estimated longitudinal velocity with ground truth.");
     matplot::xlabel(ax2, "index");
     matplot::ylabel(ax2, "position v_{x} (m/s)");
+    matplot::legend({"EKF","GT"});
     matplot::show();
     matplot::save("../filter_output/Velocity.jpg");
 
