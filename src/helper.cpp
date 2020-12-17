@@ -13,7 +13,9 @@ Helper::~Helper(){}
 * RMSE method
 */
 VectorXd Helper::CalculateRMSE(const vector<VectorXd> &estimations,
-                              const vector<VectorXd> &ground_truth) {
+                              const vector<VectorXd> &ground_truth,
+                              vector<float> &px_error,
+                              vector<float> &py_error) {
     VectorXd rmse(4);
 
     //Initialization
@@ -32,9 +34,12 @@ VectorXd Helper::CalculateRMSE(const vector<VectorXd> &estimations,
     for(auto i = 0; i<estimations.size(); ++i){
 
         VectorXd residual = estimations[i] - ground_truth[i];
+        px_error[i] = residual[0];
+        py_error[i] = residual[1];
 
         //coefficient-wise multiplication
         residual = residual.array()*residual.array();
+
         rmse += residual;
     }
 

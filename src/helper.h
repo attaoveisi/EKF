@@ -37,7 +37,7 @@ public:
     /**
     * A helper method to calculate RMSE.
     */
-    VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth);
+    VectorXd CalculateRMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truth, vector<float> &px_error, vector<float> &py_error);
 
     /**
     * A helper method to calculate Jacobians.

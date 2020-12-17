@@ -219,6 +219,18 @@ int main(int argc, char* argv[]){
     vector<VectorXd> ground_truth;
 
     /**
+     * For plotting the results
+     */
+    vector<float> px_estimated;
+    vector<float> px_ground_truth;
+    vector<float> py_estimated;
+    vector<float> py_ground_truth;
+    vector<float> vx_estimated;
+    vector<float> vx_ground_truth;
+    vector<float> vy_estimated;
+    vector<float> vy_ground_truth;
+
+    /**
     * Apply EKF-based fusion:
     * start filtering from the second frame as
     * the speed is unknown in the first
@@ -233,6 +245,18 @@ int main(int argc, char* argv[]){
         out_file_ << fusionEKF.ekf_.x_(1) << "\t";
         out_file_ << fusionEKF.ekf_.x_(2) << "\t";
         out_file_ << fusionEKF.ekf_.x_(3) << "\t";
+
+        /**
+         * output the estimation for plotting
+         */
+        px_estimated.push_back(fusionEKF.ekf_.x_(0));
+        px_ground_truth.push_back(ground_truth_vector[k].gt_values_(0));
+        py_estimated.push_back(fusionEKF.ekf_.x_(1));
+        py_ground_truth.push_back(ground_truth_vector[k].gt_values_(1));
+        vx_estimated.push_back(fusionEKF.ekf_.x_(2));
+        vx_ground_truth.push_back(ground_truth_vector[k].gt_values_(2));
+        vy_estimated.push_back(fusionEKF.ekf_.x_(3));
+        vy_ground_truth.push_back(ground_truth_vector[k].gt_values_(3));
 
         /**
          * output the measurements
@@ -276,9 +300,10 @@ int main(int argc, char* argv[]){
     /**
      * Calculate the RMSE of the estimation
      */
-
     Helper helper;
-    cout << "RMSE is calculated as:" << endl << helper.CalculateRMSE(estimations, ground_truth) << endl;
+    vector<float> px_error(measurement_vector.size(), 0);
+    vector<float> py_error(measurement_vector.size(), 0);
+    cout << "RMSE is calculated as:" << endl << helper.CalculateRMSE(estimations, ground_truth, px_error, py_error ) << endl;
 
     /**
      * Close the files
@@ -289,8 +314,70 @@ int main(int argc, char* argv[]){
     if (in_file_.is_open()) {
         in_file_.close();
     }
-    vector<double> x_test = {1,2,3,4,5};
-    matplot::plot(x_test);
+
+    /**
+     * Open a figure1
+     */
+    matplot::figure(1);
+    /**
+     * Assign subplots
+     */
+    matplot::plot(px_estimated, py_estimated, "-o");
+    matplot::hold(matplot::on);
+    matplot::plot(px_ground_truth, py_ground_truth, "*r");
+    matplot::title("Comparison of the estimated position with ground truth.");
+    matplot::xlabel( "position x (m)");
+    matplot::ylabel("position y (m)");
+    matplot::show();
+    matplot::save("../filter_output/Tracking.jpg");
+
+
+
+    /**
+     * Open a figure2
+     */
+    matplot::figure(2);
+    /**
+     * Assign subplots
+     */
+    matplot::tiledlayout(1, 2);
+    auto ax1 = matplot::nexttile();
+    matplot::plot(ax1, vy_estimated, "-k");
+    matplot::hold(matplot::on);
+    matplot::plot(ax1, vy_ground_truth, "--r");
+    matplot::title(ax1, "Comparison of the estimated lateral velocity with ground truth.");
+    matplot::xlabel(ax1, "index");
+    matplot::ylabel(ax1, "position v_{y} (m/s)");
+
+    auto ax2 = matplot::nexttile();
+    matplot::plot(ax2, vx_estimated, "-k");
+    matplot::hold(matplot::on);
+    matplot::plot(ax2, vx_ground_truth, "--r");
+    matplot::title(ax2, "Comparison of the estimated longitudinal velocity with ground truth.");
+    matplot::xlabel(ax2, "index");
+    matplot::ylabel(ax2, "position v_{x} (m/s)");
+    matplot::show();
+    matplot::save("../filter_output/Velocity.jpg");
+
+    /**
+     * Open a figure2
+     */
+    matplot::figure(3);
+    /**
+     * Assign subplots
+     */
+    matplot::tiledlayout(1, 2);
+    auto ax3 = matplot::nexttile();
+    auto h_x = matplot::hist(px_error);
+    matplot::xlabel(ax3, "longitudinal error (m)");
+    matplot::ylabel(ax3, "histogram");
+
+    auto ax4 = matplot::nexttile();
+    auto h_y = matplot::hist(py_error);
+    matplot::xlabel(ax4, "lateral error (m)");
+    matplot::ylabel(ax4, "histogram");
+    matplot::show();
+    matplot::save("../filter_output/ErrorDistribution.jpg");
 
     return 0;
 }
