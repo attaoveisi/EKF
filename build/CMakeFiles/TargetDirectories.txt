@@ -1,3 +1,0 @@
-/home/atta/EKF/build/CMakeFiles/rebuild_cache.dir
-/home/atta/EKF/build/CMakeFiles/edit_cache.dir
-/home/atta/EKF/build/CMakeFiles/EKF.dir
